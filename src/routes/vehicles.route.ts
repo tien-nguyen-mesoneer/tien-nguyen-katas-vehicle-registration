@@ -1,7 +1,8 @@
-import { Router } from "express";
+import { Request, Router } from "express";
 import { IVehicle } from "../models/Vehicle";
 import { ObjectId, sendResponse } from "../utils";
 import { db } from "..";
+import { IUser } from "../models/User";
 
 const vehicleRouter: Router = Router();
 
@@ -24,15 +25,26 @@ vehicleRouter.get("/", async (req, res) => {
  * @description Create a new vehicle (create a register request)
  * @access Public
  */
-vehicleRouter.post("/", async (req, res) => {
-  const { userId, code } = req.body;
+vehicleRouter.post("/", async (req: Request, res) => {
+  const { userId, firstName, lastName, dob, gender, address, phone, code } =
+    req.body;
   try {
+    // Create a vehicle registration
     let vehicle = await db
       .collection<IVehicle>("vehicles")
       .insertOne({ user: userId, code, approved: false });
 
+    // Update user info
+    await db
+      .collection<IUser>("users")
+      .updateOne(
+        { user: userId },
+        { $set: { firstName, lastName, dob, gender, address, phone } }
+      );
+
     sendResponse(res, 200, true, "Success", vehicle);
   } catch (error) {
+    console.log(error);
     sendResponse(res, 500, false, "Internal Server Error", null);
   }
 });
