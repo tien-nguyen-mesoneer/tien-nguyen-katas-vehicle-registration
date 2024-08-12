@@ -4,15 +4,11 @@ import vehicleRouter from "./routes/vehicles.route";
 import userRouter from "./routes/users.route";
 import authRouter from "./routes/auth.routes";
 import { Db, MongoClient } from "mongodb";
+import cors from "cors";
 
 dotenv.config();
 
-const app = express();
-const port = process.env.PORT || 3000;
-const connectionString = process.env.DB_CONNECTION_URL || "";
-
 export let db: Db;
-
 const connectDB = async () => {
   try {
     const client = new MongoClient(connectionString);
@@ -27,8 +23,12 @@ const connectDB = async () => {
   }
 };
 
-// Parse payloads to JSON and make it available in req.body
-app.use(express.json());
+const app = express();
+app.use(express.json()); /// Parse payloads to JSON and make it available in req.body
+app.use(cors()); // Enable all COR requests
+
+const port = process.env.PORT || 3000;
+const connectionString = process.env.DB_CONNECTION_URL || "";
 
 // Define route
 app.use("/health-check", (req: Request, res: Response) => {
