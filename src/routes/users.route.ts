@@ -25,22 +25,30 @@ userRouter.get("/", async (req, res) => {
  * @access Public
  */
 userRouter.post("/", async (req, res) => {
-  const { email, role } = req.body;
+  const { role, firstName, lastName, dob, email, gender, address, phone } =
+    req.body;
   try {
-    let createAction = await db
-      .collection<IUser>("users")
-      .insertOne({ email, role, vehicle: null });
+    let createAction = await db.collection<IUser>("users").insertOne({
+      role,
+      email,
+      vehicle: undefined,
+    });
 
     if (!createAction.insertedId) {
-      return sendResponse(res, 400, true, "Success", null);
+      return sendResponse(res, 400, false, "Failed to create user", null);
     }
 
-    const users = await db
+    const user = await db
       .collection<IUser>("users")
-      .find({ _id: createAction.insertedId });
+      .findOne({ _id: createAction.insertedId });
 
-    sendResponse(res, 200, true, "Success", users);
+    if (!user) {
+      return sendResponse(res, 400, false, "Failed to find user", null);
+    }
+
+    sendResponse(res, 200, true, "Success", user);
   } catch (error) {
+    console.log(error);
     sendResponse(res, 500, false, "Internal Server Error", null);
   }
 });
