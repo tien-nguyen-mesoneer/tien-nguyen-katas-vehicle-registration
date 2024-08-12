@@ -1,14 +1,28 @@
 import { IVehicle } from "./Vehicle";
 
 export type IUser = {
-  email: string;
+  // Compulsory to create an account
   role: UserRole;
-  vehicle: IVehicle | string | null;
+  email: string;
+
+  // Will be updated after register a vehicle
+  firstName?: string;
+  lastName?: string;
+  dob?: string;
+  gender?: Gender;
+  address?: string;
+  phone?: string;
+  vehicle?: IVehicle | string;
 };
 
 enum UserRole {
   GENERAL = "GENERAL",
   POLICE = "POLICE",
+}
+
+enum Gender {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
 }
 
 // import { model, Schema } from "mongoose";
