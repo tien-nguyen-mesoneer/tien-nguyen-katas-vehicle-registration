@@ -25,7 +25,7 @@ const connectDB = async () => {
 
 const app = express();
 app.use(express.json()); /// Parse payloads to JSON and make it available in req.body
-app.use(cors()); // Enable all COR requests
+app.use(cors()); // Allow all COR requests
 
 const port = process.env.PORT || 3000;
 const connectionString = process.env.DB_CONNECTION_URL || "";

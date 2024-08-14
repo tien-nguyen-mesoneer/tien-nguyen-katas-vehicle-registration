@@ -8,12 +8,16 @@ const vehicleRouter: Router = Router();
 
 /**
  * @route GET /vehicles
- * @description Get all vehicles
+ * @description Get all vehicles that are NOT approved
  * @access Public
  */
+// TODO: Set up vehicles filter via params
 vehicleRouter.get("/", async (req, res) => {
   try {
-    let vehicles = await db.collection<IVehicle>("vehicles").find({}).toArray();
+    let vehicles = await db
+      .collection<IVehicle>("vehicles")
+      .find({ approved: false })
+      .toArray();
     sendResponse(res, 200, true, "Success", vehicles);
   } catch (error) {
     sendResponse(res, 500, false, "Internal Server Error", null);
@@ -29,18 +33,69 @@ vehicleRouter.post("/", async (req: Request, res) => {
   const { userId, firstName, lastName, dob, gender, address, phone, code } =
     req.body;
   try {
-    // Create a vehicle registration
-    let vehicle = await db
-      .collection<IVehicle>("vehicles")
-      .insertOne({ user: userId, code, approved: false });
-
-    // Update user info
-    await db
+    // Check if perform user exist
+    const user = await db
       .collection<IUser>("users")
-      .updateOne(
-        { user: userId },
-        { $set: { firstName, lastName, dob, gender, address, phone } }
+      .findOne({ _id: ObjectId(userId) });
+
+    if (!user) {
+      return sendResponse(res, 400, false, "Invalid user id", userId);
+    }
+    // Create a vehicle registration
+    const createVehicleAction = await db
+      .collection<IVehicle>("vehicles")
+      .insertOne({ userId: user._id, code, approved: false });
+
+    const vehicle = await db
+      .collection<IVehicle>("vehicles")
+      .findOne({ _id: createVehicleAction.insertedId });
+
+    if (!vehicle) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Created vehicle not found",
+        createVehicleAction.insertedId
       );
+    }
+
+    // Cross update the 2 instances
+    // 1. Update user with the created vehicle
+    await db.collection<IUser>("users").updateOne(
+      { _id: ObjectId(userId) },
+      {
+        $set: {
+          firstName,
+          lastName,
+          dob,
+          gender,
+          address,
+          phone,
+          vehicle,
+        },
+      }
+    );
+    // 2. Update vehicle with updated user
+    const updatedUser = await db
+      .collection<IUser>("users")
+      .findOne({ _id: ObjectId(userId) });
+
+    if (!updatedUser) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Updated user not found",
+        createVehicleAction.insertedId
+      );
+    }
+
+    const updatedVehicle = await db
+      .collection<IVehicle>("vehicles")
+      .updateOne({ _id: vehicle._id }, { $set: { user: updatedUser } });
+
+    console.log(updatedVehicle);
 
     sendResponse(res, 200, true, "Success", vehicle);
   } catch (error) {
@@ -50,19 +105,25 @@ vehicleRouter.post("/", async (req: Request, res) => {
 });
 
 /**
- * @route GET /vehicles/:id
- * @description Get vehicle by specified id
+ * @route GET /vehicles/users/:id
+ * @description Get vehicle of a user by specified user id
  * @access Public
  */
-vehicleRouter.get("/:id", async (req, res) => {
+vehicleRouter.get("/users/:id", async (req, res) => {
   const { id } = req.params;
   try {
     let vehicle = await db
       .collection<IVehicle>("vehicles")
-      .findOne({ _id: ObjectId(id) });
+      .findOne({ userId: ObjectId(id) });
 
     if (!vehicle) {
-      return sendResponse(res, 400, false, "Vehicle is not found", null);
+      return sendResponse(
+        res,
+        200,
+        false,
+        "You have not registered a vehicle",
+        null
+      );
     }
     sendResponse(res, 200, true, "Success", vehicle);
   } catch (error) {
@@ -76,6 +137,7 @@ vehicleRouter.get("/:id", async (req, res) => {
  * @description Approve a vehicle registration request by vehicle Id
  * @access Private
  */
+// TODO: Add middleware to check user role before accessing
 vehicleRouter.put("/:id/approve", async (req, res) => {
   const { id } = req.params;
 
