@@ -32,7 +32,6 @@ userRouter.post("/", async (req, res) => {
     let createAction = await db.collection<IUser>("users").insertOne({
       role,
       email,
-      vehicle: undefined,
     });
 
     if (!createAction.insertedId) {
