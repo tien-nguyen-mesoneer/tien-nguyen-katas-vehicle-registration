@@ -1,4 +1,5 @@
 import { IVehicle } from "./Vehicle";
+import type { ObjectId } from "mongodb";
 
 export type IUser = {
   // Compulsory to create an account
@@ -12,7 +13,7 @@ export type IUser = {
   gender?: Gender;
   address?: string;
   phone?: string;
-  vehicle?: IVehicle | string;
+  vehicle?: IVehicle;
 };
 
 enum UserRole {
@@ -24,23 +25,3 @@ enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
 }
-
-// import { model, Schema } from "mongoose";
-// const userSchema: Schema = new Schema({
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//   },
-//   role: {
-//     type: String,
-//     default: UserRole.GENERAL,
-//     enum: UserRole,
-//   },
-//   vehicle: {
-//     type: String,
-//     ref: "Vehicle",
-//   },
-// });
-// const User = model<IUser>("User", userSchema);
-// export default User;
