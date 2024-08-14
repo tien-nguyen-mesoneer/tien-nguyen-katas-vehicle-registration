@@ -1,27 +1,9 @@
 import { IUser } from "./User";
+import type { ObjectId } from "mongodb";
 
 export type IVehicle = {
-  user: IUser | string;
+  userId: ObjectId;
+  user?: IUser;
   code: string;
   approved: boolean;
 };
-
-// import mongoose, { Document, model, Schema } from "mongoose";
-// const vehicleSchema: Schema = new Schema({
-//   user: {
-//     type: String,
-//     ref: "User",
-//   },
-//   code: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//   },
-//   approved: {
-//     type: Boolean,
-//     require: true,
-//     default: false,
-//   },
-// });
-// const Vehicle = model<IVehicle>("Vehicle", vehicleSchema);
-// export default Vehicle;
