@@ -11,7 +11,7 @@ const vehicleRouter: Router = Router();
  * @description Get all vehicles that are NOT approved
  * @access Public
  */
-// TODO: Set up vehicles filter via params
+// TODO: Set up vehicles filter
 vehicleRouter.get("/", async (req, res) => {
   try {
     let vehicles = await db

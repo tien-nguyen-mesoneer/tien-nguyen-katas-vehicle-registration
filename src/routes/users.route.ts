@@ -10,6 +10,7 @@ const userRouter: Router = Router();
  * @description Get all users
  * @access Public
  */
+// TODO: Set up user filter
 userRouter.get("/", async (req, res) => {
   try {
     const users = await db.collection<IUser>("users").find({}).toArray();
