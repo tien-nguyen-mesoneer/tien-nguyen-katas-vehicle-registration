@@ -8,21 +8,6 @@ import cors from "cors";
 
 dotenv.config();
 
-export let db: Db;
-const connectDB = async () => {
-  try {
-    const client = new MongoClient(connectionString);
-    await client.connect();
-    // Use the database from the client connection
-    db = client.db();
-    console.log("MongoDB connected successfully!");
-  } catch (err) {
-    console.error("MongoDB connection error:", err);
-    // Exit the application if the connection fails
-    process.exit(1);
-  }
-};
-
 const app = express();
 app.use(express.json()); /// Parse payloads to JSON and make it available in req.body
 app.use(cors()); // Allow all COR requests
@@ -42,6 +27,26 @@ app.use("/auth", authRouter);
 app.use((req, res, next) => {
   res.status(404).send("Not found");
 });
+
+export let db: Db;
+const connectDB = async () => {
+  try {
+    console.log(
+      "Ready to connect with Mongo via connection string:",
+      connectionString,
+      "..."
+    );
+    const client = new MongoClient(connectionString);
+    await client.connect();
+    // Use the database from the client connection
+    db = client.db();
+    console.log("MongoDB connected successfully!");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    // Exit the application if the connection fails
+    process.exit(1);
+  }
+};
 
 // Start the server and connect to MongoDB
 const startServer = async () => {
